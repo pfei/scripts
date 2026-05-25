@@ -31,9 +31,10 @@ def main():
     bin_dir.mkdir(parents=True, exist_ok=True)
 
     symlinks_to_create = {
+        bin_dir / "toggle-touchpad": repo_root / "desktop" / "toggle-touchpad.py",
         bin_dir / "toggle-touchpad-click": repo_root
         / "desktop"
-        / "toggle-touchpad-wrapper.py"
+        / "toggle-touchpad-wrapper.py",
     }
 
     for target, src in symlinks_to_create.items():
