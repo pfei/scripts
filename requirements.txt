@@ -1,0 +1,5 @@
+yt-dlp>=2026.3.17
+mutagen>=1.47.0
+pycryptodomex>=3.23.0
+secretstorage>=3.5.0
+
