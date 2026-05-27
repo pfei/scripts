@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 battery_monitor.py — Battery monitoring for Debian / MATE Desktop
-Triggers a critical notification when the battery is low.
+Triggers notifications for low, critical, and high (overcharged) battery states.
 """
 
 import os
@@ -11,16 +11,15 @@ import logging
 import glob
 
 # ── Configuration ──────────────────────────────────────────────────────────────
+THRESHOLD_HIGH = 90  # % : warning to unplug charger
 THRESHOLD_CRITICAL = 10  # % : urgent notification
 THRESHOLD_LOW = 25  # % : first warning
 CHECK_INTERVAL = 60  # seconds between normal checks
-SNOOZE_INTERVAL = 300  # seconds between notifications when battery is low
+SNOOZE_INTERVAL = 300  # seconds between notifications for low/high states
 # ──────────────────────────────────────────────────────────────────────────────
-
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
+    format="%(message)s",
 )
 log = logging.getLogger(__name__)
 
@@ -56,11 +55,9 @@ def get_dbus_env() -> dict:
     works even when run from a user systemd service.
     """
     env = os.environ.copy()
-    # Common values under MATE / LightDM
     if "DISPLAY" not in env:
         env["DISPLAY"] = ":0"
     if "DBUS_SESSION_BUS_ADDRESS" not in env:
-        # Looks for the session bus of the first user logged into X
         try:
             uid = subprocess.check_output(["id", "-u"], text=True).strip()
             bus_path = f"/run/user/{uid}/bus"
@@ -71,11 +68,13 @@ def get_dbus_env() -> dict:
     return env
 
 
-def send_notification(urgency: str, title: str, message: str) -> None:
-    """Sends a notification via notify-send."""
+def send_notification(
+    urgency: str, title: str, message: str, icon: str = "battery-caution"
+) -> None:
+    """Sends a persistent notification via notify-send."""
     env = get_dbus_env()
-    # -t 10000 = 10s for 'normal', persistent for 'critical' on MATE
-    timeout = "0" if urgency == "critical" else "10000"
+    # "0" forces the notification to remain visible until clicked on MATE
+    timeout = "0"
     cmd = [
         "notify-send",
         "-u",
@@ -83,7 +82,7 @@ def send_notification(urgency: str, title: str, message: str) -> None:
         "-t",
         timeout,
         "-i",
-        "battery-caution",  # standard icon
+        icon,
         title,
         message,
     ]
@@ -112,15 +111,27 @@ def check_battery(battery_path: str) -> float:
 
     log.info("Battery: %d%% [%s]", capacity, status)
 
+    # --- Case 1: Battery is charging and gets too high ---
+    if status == "Charging" and capacity >= THRESHOLD_HIGH:
+        send_notification(
+            "normal",
+            "🔋 Battery High",
+            f"Level: {capacity}%. Unplug the charger to protect battery health.",
+            icon="battery-full-charging",
+        )
+        return SNOOZE_INTERVAL
+
+    # If charging but hasn't reached 90%, or if full/unknown, sleep normally
     if status != "Discharging":
-        # Charging or full: normal check interval
         return CHECK_INTERVAL
 
+    # --- Case 2: Battery is discharging and getting low ---
     if capacity <= THRESHOLD_CRITICAL:
         send_notification(
             "critical",
             "⚠ Critical Battery!",
             f"Level: {capacity}%. Plug in the charger immediately.",
+            icon="battery-caution",
         )
         return SNOOZE_INTERVAL
 
@@ -129,6 +140,7 @@ def check_battery(battery_path: str) -> float:
             "normal",
             "🔋 Low Battery",
             f"Level: {capacity}%. Consider plugging in the charger.",
+            icon="battery-caution",
         )
         return SNOOZE_INTERVAL
 
@@ -137,7 +149,8 @@ def check_battery(battery_path: str) -> float:
 
 def main() -> None:
     log.info(
-        "Starting battery monitor (thresholds: %d%% / %d%%)",
+        "Starting battery monitor (thresholds: High %d%% / Low %d%% / Critical %d%%)",
+        THRESHOLD_HIGH,
         THRESHOLD_LOW,
         THRESHOLD_CRITICAL,
     )
