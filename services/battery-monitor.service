@@ -1,17 +1,18 @@
 [Unit]
 Description=Battery Monitor — MATE Notifications
-After=graphical-session.target
-PartOf=graphical-session.target
+# On attend simplement que la session utilisateur de base soit prête
+After=default.target
 
 [Service]
 Type=simple
+# Utilise le chemin exact que vous avez testé avec succès
 ExecStart=%h/.local/bin/battery_monitor
 Restart=on-failure
 RestartSec=10
 
-# Environment variables for MATE / LightDM desktop notifications
+# Indispensable pour injecter les variables d'environnement graphiques
 Environment=DISPLAY=:0
+Environment=XAUTHORITY=%h/.Xauthority
 
 [Install]
-WantedBy=graphical-session.target
-
+WantedBy=default.target
