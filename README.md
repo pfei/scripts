@@ -5,11 +5,24 @@ A collection of local utility scripts, desktop environment tweaks, and automatio
 ## Structure
 
 - `desktop/`: Hardware configurations and desktop environment wrappers.
+- `dev/`: Development utilities and code analysis tools.
+- `multimedia/`: Audio and video download/extraction tools.
+- `services/`: Background monitors and systemd service files.
+- `tests/`: Automated test suites (using pytest).
+- `utils/`: Generic command-line utility scripts.
 
 ## Installation
 
-You can deploy the utility symlinks to your local binary path (`~/.local/bin`) by running the installation script:
+This repository uses a centralized installer that deploys virtual environment-isolated binary wrappers straight to your local path (`~/.local/bin`):
 
 ```bash
-python3 install-symlinks.py
+./setup.py
+```
+
+## Testing
+
+To run the test suite inside the local environment:
+
+```
+.venv/bin/pytest tests/
 ```
