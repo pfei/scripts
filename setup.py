@@ -129,6 +129,7 @@ def main():
         bin_dir / "bv360": repo_root / "multimedia" / "yt-download-360p.py",
         bin_dir / "yta": repo_root / "multimedia" / "yt-extract-audio.py",
         bin_dir / "battery_monitor": repo_root / "services" / "battery-monitor.py",
+        bin_dir / "dumpcode": repo_root / "dev" / "dumpcode.py",
     }
 
     print("\n⚙️  Deploying binary wrappers to target bin path...")
