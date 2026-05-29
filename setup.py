@@ -4,11 +4,11 @@
 #              updates dependencies and maps binaries via crisp shell wrappers.
 # Usage: ./setup.py
 
-import subprocess
-from pathlib import Path
-import sys
 import os
 import shutil
+import subprocess
+import sys
+from pathlib import Path
 
 
 def get_project_python() -> str:
@@ -131,6 +131,8 @@ def main():
         bin_dir / "battery_monitor": repo_root / "services" / "battery-monitor.py",
         bin_dir / "dumpcode": repo_root / "dev" / "dumpcode.py",
         bin_dir / "rfwmtime": repo_root / "utils" / "rfwmtime.py",
+        bin_dir / "hx-jump": repo_root / "dev" / "hx-jump.py",
+        bin_dir / "hx-find": repo_root / "dev" / "hx-find.py",
     }
 
     print("\n⚙️  Deploying binary wrappers to target bin path...")
