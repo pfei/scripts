@@ -134,6 +134,7 @@ def main():
         bin_dir / "hx-jump": repo_root / "dev" / "hx-jump.py",
         bin_dir / "hx-find": repo_root / "dev" / "hx-find.py",
         bin_dir / "git-sync-check": repo_root / "dev" / "git-sync-check.py",
+        bin_dir / "check-pass": repo_root / "utils" / "check-pass.py",
     }
 
     print("\n⚙️  Deploying binary wrappers to target bin path...")
